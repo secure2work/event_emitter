@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/bruteforce1414/event_emitter"
@@ -18,6 +21,16 @@ func main() {
 	wg.Add(1)
 
 	var e1, e2 event_emitter.Event
+
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("\r- Ctrl+C pressed in Terminal")
+		time.Sleep(5000)
+		os.Exit(0)
+	}()
+
 	go func() {
 		for {
 			wg.Add(1)
@@ -56,8 +69,6 @@ func main() {
 	}()
 
 	wg.Wait()
-	fmt.Println("e1 is", e1)
-	fmt.Println("e2 is", e2)
 
 	funcUnsubscribe1()
 	funcUnsubscribe2()
