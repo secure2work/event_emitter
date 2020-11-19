@@ -1,7 +1,7 @@
 package event_emitter
 
 type EventEmitter interface {
-	Subscribe() (evt <-chan Event, unsubscribe func())
+	Subscribe() (evt <-chan Event, unsubscribe func() error)
 	Emit(event Event)
 }
 

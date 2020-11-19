@@ -1,8 +1,10 @@
 package event_emitter
 
 import (
-	"fmt"
+	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPublisher_Subscribe(t *testing.T) {
@@ -10,9 +12,23 @@ func TestPublisher_Subscribe(t *testing.T) {
 	ch1, funcUnsubscribe1 := pub.Subscribe()
 	ch2, funcUnsubscribe2 := pub.Subscribe()
 
-	fmt.Println("channel", ch1)
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 
-	fmt.Println("channel2", ch2)
+	var e1, e2 Event
+	go func() {
+		select {
+		case e1 = <-ch1:
+			wg.Done()
+		}
+	}()
+
+	go func() {
+		select {
+		case e2 = <-ch2:
+			wg.Done()
+		}
+	}()
 
 	eventTest := Event{
 		Name:   "all plugins inited",
@@ -21,7 +37,10 @@ func TestPublisher_Subscribe(t *testing.T) {
 
 	pub.Emit(eventTest)
 
-	//fmt.Println("func is", b)
+	wg.Wait()
+
+	assert.Equal(t, e1, e2)
+
 	funcUnsubscribe1()
 	funcUnsubscribe2()
 }

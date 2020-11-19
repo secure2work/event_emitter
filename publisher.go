@@ -1,7 +1,6 @@
 package event_emitter
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -11,25 +10,25 @@ type publisher struct {
 	subs    map[uint64]chan<- Event
 }
 
-func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
+func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func() error) {
 	newChannel := make(chan Event)
 	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.counter = p.counter + 1
 	nameChannel := p.counter
-	p.mu.Unlock()
 	p.subs[nameChannel] = newChannel
 
-	c := func() {
+	c := func() error {
 		_, ok := p.subs[nameChannel]
 		if ok {
-			close(newChannel)
 			p.mu.Lock()
+			defer p.mu.Unlock()
+			close(newChannel)
 			delete(p.subs, nameChannel)
-			p.mu.Unlock()
-			fmt.Println("nameChannel is", nameChannel)
-			fmt.Println("unsubscribe")
+			return nil
 		} else {
-			println("there's not channel with id ", nameChannel)
+			return nil
 		}
 	}
 
@@ -38,23 +37,19 @@ func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 
 func (p *publisher) Emit(event Event) {
 	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	for _, value := range p.subs {
-
-		go func(evt chan<- Event) {
-			value <- event
+		go func(ch chan<- Event) {
+			ch <- event
 		}(value)
-		fmt.Println("channel is", value)
-		fmt.Println("event is", event)
 	}
-	p.mu.Unlock()
 }
 
 func NewPubsub() *publisher {
 	pub := &publisher{}
 	pub.mu.Lock()
+	defer pub.mu.Unlock()
 	pub.subs = make(map[uint64]chan<- Event)
-
-	pub.mu.Unlock()
 	return pub
 }
