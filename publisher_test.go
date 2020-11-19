@@ -7,8 +7,14 @@ import (
 
 func TestPublisher_Subscribe(t *testing.T) {
 	pub:=NewPubsub()
-	ch,funcUnsubscribe:=pub.Subscribe()
-	fmt.Println("channel", ch)
+	ch1,funcUnsubscribe1:=pub.Subscribe()
+	ch2,funcUnsubscribe2:=pub.Subscribe()
+
+	fmt.Println("channel", ch1)
+
+	fmt.Println("channel2", ch2)
+
 	//fmt.Println("func is", b)
-	funcUnsubscribe()
+	funcUnsubscribe1()
+	funcUnsubscribe2()
 }

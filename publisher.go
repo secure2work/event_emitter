@@ -2,22 +2,24 @@ package event_emitter
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"sync"
 )
 
 type publisher struct {
+	counter uint64
 	mu   sync.RWMutex
-	subs map[string]chan<- Event
+	subs map[uint64]chan<- Event
 }
 
 //unsubscribe func(p, nameChannel string)
 //Убрать содержимое скобок или нет?
 func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 	newChannel := make(chan Event)
-	nameChannel := uuid.New().String()
+	p.mu.Lock()
+	p.counter=p.counter+1
+	nameChannel := p.counter
+	p.mu.Unlock()
 	p.subs[nameChannel] = newChannel
-
 
 	c := func() {
 		_, ok := p.subs[nameChannel];
@@ -29,7 +31,7 @@ func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 			fmt.Println("nameChannel is", nameChannel)
 			fmt.Println("unsubscribe")
 		}else{
-			println("there's not channel with id "+nameChannel)
+			println("there's not channel with id ", nameChannel)
 		}
 	}
 
@@ -49,7 +51,7 @@ func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 func NewPubsub() *publisher {
 	pub := &publisher{}
 	pub.mu.Lock()
-	pub.subs = make(map[string]chan<- Event)
+	pub.subs = make(map[uint64]chan<- Event)
 	pub.mu.Unlock()
 	return pub
 }
