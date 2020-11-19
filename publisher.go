@@ -22,7 +22,10 @@ func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 	c := func() {
 		_, ok := p.subs[nameChannel];
 		if ok {
+			close(newChannel)
+			p.mu.Lock()
 			delete(p.subs, nameChannel);
+			p.mu.Unlock()
 			fmt.Println("nameChannel is", nameChannel)
 			fmt.Println("unsubscribe")
 		}else{
@@ -45,6 +48,8 @@ func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 */
 func NewPubsub() *publisher {
 	pub := &publisher{}
+	pub.mu.Lock()
 	pub.subs = make(map[string]chan<- Event)
+	pub.mu.Unlock()
 	return pub
 }
