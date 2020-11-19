@@ -38,16 +38,15 @@ func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func()) {
 	return newChannel, c
 }
 
-/*func (p *publisher) UnSubscribe(p, nameChannel string) {
-	_, ok := p.subs[nameChannel];
-	if ok {
-		delete(p.subs, nameChannel);
-	}else{
-		println("there's not channel with id "+nameChannel)
+func(p *publisher) Emit(event Event){
+	p.mu.Lock()
+	for _, value := range p.subs {
+		value<-event
 	}
-	return
+	p.mu.Unlock()
 }
-*/
+
+
 func NewPubsub() *publisher {
 	pub := &publisher{}
 	pub.mu.Lock()
