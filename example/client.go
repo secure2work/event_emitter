@@ -2,74 +2,73 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
-	"strconv"
-	"sync"
 	"syscall"
 	"time"
 
 	"github.com/bruteforce1414/event_emitter"
 )
 
+const (
+	eventTime string = "event.time"
+)
+
 func main() {
-	publisher1 := event_emitter.NewPubsub()
-	channel1, funcUnsubscribe1 := publisher1.Subscribe()
-	channel2, funcUnsubscribe2 := publisher1.Subscribe()
+	publisher := event_emitter.NewPubsub()
+	channel1, unsubscribe1 := publisher.Subscribe()
+	channel2, unsubscribe2 := publisher.Subscribe()
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+	listen(channel1, "ch1", 5)
+	listen(channel2, "ch2", 7)
 
-	var e1, e2 event_emitter.Event
+	ticker := time.NewTicker(time.Second)
+	go func() {
+		for {
+			select {
+			case t := <-ticker.C:
+				publisher.Emit(event_emitter.Event{
+					Name: eventTime,
+					Params: map[string]interface{}{
+						"time": t,
+					},
+				})
+			}
+		}
+	}()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		fmt.Println("\r- Ctrl+C pressed in Terminal")
-		time.Sleep(5000)
-		os.Exit(0)
-	}()
 
-	go func() {
-		for {
-			wg.Add(1)
-			e1 = <-channel1
-			i, _ := strconv.Atoi(e1.Name)
-			if (i % 2) == 0 {
-				fmt.Println("1 channel log number", e1.Name)
-			}
-			fmt.Println(e1.Name)
-			wg.Done()
-		}
-	}()
+	<-c
 
+	if err := unsubscribe1(); err != nil {
+		log.Println(err.Error())
+	}
+	if err := unsubscribe2(); err != nil {
+		log.Println(err.Error())
+	}
+
+	fmt.Println("\r- Ctrl+C pressed in Terminal")
+}
+
+func listen(ch <-chan event_emitter.Event, chName string, div int) {
 	go func() {
 		for {
-			wg.Add(1)
-			e2 = <-channel2
-			i, _ := strconv.Atoi(e2.Name)
-			if (i % 3) == 0 {
-				fmt.Println("2 channel log number", e2.Name)
+			e1 := <-ch
+			switch e1.Name {
+			case eventTime:
+				t, ok := e1.Params["time"].(time.Time)
+				if !ok {
+					log.Println(chName, ": no time provided")
+				}
+				if (t.Second() % div) == 0 {
+					log.Println(chName, " log number: ", t.Second())
+				}
+			default:
+				continue
 			}
-			wg.Done()
-
 		}
 	}()
-
-	go func() {
-		for {
-			event1 := event_emitter.Event{
-				Name:   fmt.Sprint(time.Now().Second()),
-				Params: make(map[string]interface{}),
-			}
-			publisher1.Emit(event1)
-			time.Sleep(2 * time.Second)
-		}
-	}()
-
-	wg.Wait()
-
-	funcUnsubscribe1()
-	funcUnsubscribe2()
 }
