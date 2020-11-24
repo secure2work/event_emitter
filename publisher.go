@@ -2,12 +2,18 @@ package event_emitter
 
 import (
 	"sync"
+	e "github.com/nori-io/common/pkg/domain/enum/v3/event"
 )
+
+type Sub struct {
+	Pattern string
+	Ch      chan<- Event
+}
 
 type publisher struct {
 	counter uint64
 	mu      sync.RWMutex
-	subs    map[uint64]chan<- Event
+	subs    map[uint64]Sub
 }
 
 type Middleware func(event *Event)
@@ -23,7 +29,10 @@ func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Eve
 
 	p.counter = p.counter + 1
 	nameChannel := p.counter
-	p.subs[nameChannel] = newChannel
+	p.subs[nameChannel] = Sub{
+		Pattern: pattern,
+		Ch:      newChannel,
+	}
 
 	c := func() error {
 		_, ok := p.subs[nameChannel]
@@ -47,8 +56,11 @@ func (p *publisher) Emit(event Event) {
 
 	for _, value := range p.subs {
 		go func(ch chan<- Event) {
-			ch <- event
-		}(value)
+			if (event.Name == value.Pattern)||(value.Pattern===e.NoriPlugins) {
+				ch <- event
+			}
+
+		}(value.Ch)
 	}
 }
 
@@ -56,6 +68,6 @@ func NewPubsub() *publisher {
 	pub := &publisher{}
 	pub.mu.Lock()
 	defer pub.mu.Unlock()
-	pub.subs = make(map[uint64]chan<- Event)
+	pub.subs = make(map[uint64]Sub)
 	return pub
 }

@@ -17,8 +17,8 @@ const (
 
 func main() {
 	publisher := event_emitter.NewPubsub()
-	channel1, unsubscribe1 := publisher.Subscribe()
-	channel2, unsubscribe2 := publisher.Subscribe()
+	channel1, unsubscribe1 := publisher.On("nori/plugins/*")
+	channel2, unsubscribe2 := publisher.On("nori/plugins/*")
 
 	listen(channel1, "ch1", 5)
 	listen(channel2, "ch2", 7)

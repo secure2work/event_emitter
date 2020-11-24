@@ -3,5 +3,6 @@ module github.com/bruteforce1414/event_emitter
 go 1.15
 
 require (
+	github.com/nori-io/common/v3 v3.0.0 // indirect
 	github.com/stretchr/testify v1.6.1
 )
