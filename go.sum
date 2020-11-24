@@ -4,7 +4,10 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/go-chi/chi v4.1.2+incompatible h1:fGFk2Gmi/YKXk0OmGfBh0WgmN3XB8lVnEyNz34tQRec=
 github.com/go-chi/chi v4.1.2+incompatible/go.mod h1:eB3wogJHnLi3x/kFX2A+IbTBlXxmMeXJVKy9tTv1XzQ=
 github.com/golang/mock v1.3.1/go.mod h1:sBzyDLLjw3U8JLTeZvSv8jJB+tU5PVekmnlKIyFUx0Y=
+github.com/golang/mock v1.4.4/go.mod h1:l3mdAwkq5BuhzHwde/uurv3sEJeZMXNpwsxVWU71h+4=
 github.com/nori-io/common v1.1.0 h1:jJRMXKz3PFyKRjZJFr0oqoLB0Kywz7upr5IGah0QDes=
+github.com/nori-io/common/v3 v3.0.0-20201124093758-ceada2a2cd8c h1:j4OPTat32KFd/kzewM+no/eoSqqZ1j653TL2hw8UXxU=
+github.com/nori-io/common/v3 v3.0.0-20201124093758-ceada2a2cd8c/go.mod h1:a/ICgA6b3A3x8HlNDSe9z6HCNiFvuvZJhZP78rzX0ME=
 github.com/nori-io/common/v3 v3.0.0 h1:5Qa40t9EL1tqD1j8RgK9fOI/ydMqhVoZYZZVGFo64I8=
 github.com/nori-io/common/v3 v3.0.0/go.mod h1:xWpo27B7goqoWOSIEt/FZnxDaWhBkzowQ625/whGT80=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

@@ -2,7 +2,8 @@ package event_emitter
 
 import (
 	"sync"
-	e "github.com/nori-io/common/pkg/domain/enum/v3/event"
+
+	e "github.com/nori-io/common/v3/pkg/domain/enum/event"
 )
 
 type Sub struct {
@@ -56,7 +57,7 @@ func (p *publisher) Emit(event Event) {
 
 	for _, value := range p.subs {
 		go func(ch chan<- Event) {
-			if (event.Name == value.Pattern)||(value.Pattern===e.NoriPlugins) {
+			if (event.Name == value.Pattern) || (value.Pattern == string(e.NoriPlugins)) {
 				ch <- event
 			}
 
