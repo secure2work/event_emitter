@@ -10,7 +10,13 @@ type publisher struct {
 	subs    map[uint64]chan<- Event
 }
 
-func (p *publisher) Subscribe() (evt <-chan Event, unsubscribe func() error) {
+type Middleware func(event *Event)
+
+func (p *publisher) Use(pattern string, middleware ...Middleware) {
+
+}
+
+func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Event, unsubscribe func() error) {
 	newChannel := make(chan Event)
 	p.mu.Lock()
 	defer p.mu.Unlock()
