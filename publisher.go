@@ -11,15 +11,20 @@ type Sub struct {
 }
 
 type publisher struct {
-	counter uint64
-	mu      sync.RWMutex
-	subs    map[uint64]Sub
+	counter     uint64
+	mu          sync.RWMutex
+	subs        map[uint64]Sub
+	middlewares []Middleware
 }
 
 type Middleware func(event *Event)
 
 func (p *publisher) Use(pattern string, middleware ...Middleware) {
-
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for _, value := range middleware {
+		p.middlewares = append(p.middlewares, value)
+	}
 }
 
 func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Event, unsubscribe func() error) {
@@ -73,5 +78,6 @@ func NewPubsub() *publisher {
 	pub.mu.Lock()
 	defer pub.mu.Unlock()
 	pub.subs = make(map[uint64]Sub)
+	pub.middlewares = make([]Middleware, 0)
 	return pub
 }
