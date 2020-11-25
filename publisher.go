@@ -6,8 +6,9 @@ import (
 )
 
 type Sub struct {
-	Pattern string
-	Ch      chan<- Event
+	Pattern     string
+	Ch          chan<- Event
+	middlewares []Middleware
 }
 
 type publisher struct {
@@ -34,9 +35,15 @@ func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Eve
 
 	p.counter = p.counter + 1
 	nameChannel := p.counter
+
+	middlewaresArr := make([]Middleware, 0)
+	for _, value := range middleware {
+		middlewaresArr = append(middlewaresArr, value)
+	}
 	p.subs[nameChannel] = Sub{
-		Pattern: pattern,
-		Ch:      newChannel,
+		Pattern:     pattern,
+		Ch:          newChannel,
+		middlewares: middlewaresArr,
 	}
 
 	c := func() error {
