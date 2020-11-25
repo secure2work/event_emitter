@@ -67,16 +67,18 @@ func (p *publisher) Emit(event Event) {
 	defer p.mu.Unlock()
 
 	for _, value := range p.subs {
-		go func(ch chan<- Event, patternCh string) {
+		go func(ch chan<- Event, patternCh string, middlewares []Middleware) {
 
 			ok, err := path.Match(patternCh, event.Name)
 
 			if err != nil || !ok {
 				return
 			}
-
+			for _, m := range middlewares {
+				m(&event)
+			}
 			ch <- event
-		}(value.Ch, value.Pattern)
+		}(value.Ch, value.Pattern, value.middlewares)
 	}
 }
 

@@ -17,8 +17,16 @@ const (
 
 func main() {
 	publisher := event_emitter.NewPubsub()
-	channel1, unsubscribe1 := publisher.On("nori/plugins/*")
-	channel2, unsubscribe2 := publisher.On("nori/plugins/started")
+
+	middlewares1 := func(event *event_emitter.Event) {
+		event.Name = event.Name + "_m1"
+	}
+	middlewares2 := func(event *event_emitter.Event) {
+		event.Name = event.Name + "_m2"
+	}
+
+	channel1, unsubscribe1 := publisher.On("nori/plugins/*", middlewares1, middlewares2)
+	channel2, unsubscribe2 := publisher.On("nori/plugins/started", middlewares2)
 
 	listen(channel1, "ch1", 5)
 	listen(channel2, "ch2", 5)
@@ -29,7 +37,7 @@ func main() {
 			select {
 			case t := <-ticker.C:
 				publisher.Emit(event_emitter.Event{
-					Name: "nori/plugins/stopped",
+					Name: "nori/plugins/started",
 					Params: map[string]interface{}{
 						"time": t,
 					},
