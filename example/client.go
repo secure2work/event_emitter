@@ -18,18 +18,18 @@ const (
 func main() {
 	publisher := event_emitter.NewPubsub()
 	channel1, unsubscribe1 := publisher.On("nori/plugins/*")
-	channel2, unsubscribe2 := publisher.On("nori/plugins/*")
+	channel2, unsubscribe2 := publisher.On("nori/plugins/started")
 
 	listen(channel1, "ch1", 5)
-	listen(channel2, "ch2", 7)
+	listen(channel2, "ch2", 5)
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Second * 5)
 	go func() {
 		for {
 			select {
 			case t := <-ticker.C:
 				publisher.Emit(event_emitter.Event{
-					Name: eventTime,
+					Name: "nori/plugins/stopped",
 					Params: map[string]interface{}{
 						"time": t,
 					},
@@ -57,18 +57,7 @@ func listen(ch <-chan event_emitter.Event, chName string, div int) {
 	go func() {
 		for {
 			e1 := <-ch
-			switch e1.Name {
-			case eventTime:
-				t, ok := e1.Params["time"].(time.Time)
-				if !ok {
-					log.Println(chName, ": no time provided")
-				}
-				if (t.Second() % div) == 0 {
-					log.Println(chName, " log number: ", t.Second())
-				}
-			default:
-				continue
-			}
+			log.Println(chName, " receive event: ", e1.Name)
 		}
 	}()
 }

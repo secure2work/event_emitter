@@ -1,9 +1,8 @@
 package event_emitter
 
 import (
+	"path"
 	"sync"
-
-	e "github.com/nori-io/common/v3/pkg/domain/enum/event"
 )
 
 type Sub struct {
@@ -56,12 +55,16 @@ func (p *publisher) Emit(event Event) {
 	defer p.mu.Unlock()
 
 	for _, value := range p.subs {
-		go func(ch chan<- Event) {
-			if (event.Name == value.Pattern) || (value.Pattern == string(e.NoriPlugins)) {
-				ch <- event
+		go func(ch chan<- Event, patternCh string) {
+
+			ok, err := (path.Match(patternCh, event.Name))
+
+			if err != nil || !ok {
+				return
 			}
 
-		}(value.Ch)
+			ch <- event
+		}(value.Ch, value.Pattern)
 	}
 }
 
