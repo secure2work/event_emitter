@@ -57,7 +57,7 @@ func (p *publisher) Emit(event Event) {
 	for _, value := range p.subs {
 		go func(ch chan<- Event, patternCh string) {
 
-			ok, err := (path.Match(patternCh, event.Name))
+			ok, err := path.Match(patternCh, event.Name)
 
 			if err != nil || !ok {
 				return

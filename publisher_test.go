@@ -9,8 +9,8 @@ import (
 
 func TestPublisher_Subscribe(t *testing.T) {
 	pub := NewPubsub()
-	ch1, funcUnsubscribe1 := pub.Subscribe()
-	ch2, funcUnsubscribe2 := pub.Subscribe()
+	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*")
+	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started")
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
@@ -31,7 +31,7 @@ func TestPublisher_Subscribe(t *testing.T) {
 	}()
 
 	eventTest := Event{
-		Name:   "all plugins inited",
+		Name:   "nori/plugins/started",
 		Params: nil,
 	}
 
@@ -40,7 +40,6 @@ func TestPublisher_Subscribe(t *testing.T) {
 	wg.Wait()
 
 	assert.Equal(t, e1, e2)
-
 	funcUnsubscribe1()
 	funcUnsubscribe2()
 }
