@@ -11,14 +11,14 @@ func TestPublisher_On_1subscriber_1receiving(t *testing.T) {
 	pub := NewPubsub()
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*")
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+	wg1 := sync.WaitGroup{}
+	wg1.Add(1)
 
 	var e1, e2 Event
 	go func() {
 		select {
 		case e1 = <-ch1:
-			wg.Done()
+			wg1.Done()
 		}
 	}()
 
@@ -29,7 +29,7 @@ func TestPublisher_On_1subscriber_1receiving(t *testing.T) {
 
 	pub.Emit(eventTest)
 
-	wg.Wait()
+	wg1.Wait()
 
 	t.Log("event in 1st channel: ", e1.Name)
 	t.Log("event in 2nd channel: ", e2.Name)
@@ -44,21 +44,21 @@ func TestPublisher_On_2subscribers_2receiving(t *testing.T) {
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*")
 	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started")
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg2 := sync.WaitGroup{}
+	wg2.Add(2)
 
 	var e1, e2 Event
 	go func() {
 		select {
 		case e1 = <-ch1:
-			wg.Done()
+			wg2.Done()
 		}
 	}()
 
 	go func() {
 		select {
 		case e2 = <-ch2:
-			wg.Done()
+			wg2.Done()
 		}
 	}()
 
@@ -69,7 +69,7 @@ func TestPublisher_On_2subscribers_2receiving(t *testing.T) {
 
 	pub.Emit(eventTest)
 
-	wg.Wait()
+	wg2.Wait()
 
 	t.Log("event in 1st channel: ", e1.Name)
 	t.Log("event in 2nd channel: ", e2.Name)
@@ -85,26 +85,28 @@ func TestPublisher_On_2subscribers_1receiving(t *testing.T) {
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*")
 	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started")
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg3 := sync.WaitGroup{}
+	wg3.Add(2)
 
 	var e1, e2 Event
 	go func() {
 		select {
 		case e1 = <-ch1:
-			wg.Done()
+			wg3.Done()
 		}
 	}()
 
 	go func() {
 		select {
 		case e2 = <-ch2:
-			wg.Done()
+			//wg3.Done()
 
 		}
 
 	}()
-	wg.Done()
+	t.Log("e2 is", e2)
+	t.Log("wg3 is", wg3)
+	wg3.Done()
 
 	eventTest := Event{
 		Name:   "nori/plugins/stopped",
@@ -113,7 +115,7 @@ func TestPublisher_On_2subscribers_1receiving(t *testing.T) {
 
 	pub.Emit(eventTest)
 
-	wg.Wait()
+	wg3.Wait()
 
 	t.Log("event in 1st channel: ", e1.Name)
 	t.Log("event in 2nd channel: ", e2.Name)
@@ -124,6 +126,7 @@ func TestPublisher_On_2subscribers_1receiving(t *testing.T) {
 }
 
 func TestPublisher_On_2subscribers_2receiving_2globalmiddleware(t *testing.T) {
+
 	pub := NewPubsub()
 
 	eventTest := Event{
@@ -144,27 +147,27 @@ func TestPublisher_On_2subscribers_2receiving_2globalmiddleware(t *testing.T) {
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*")
 	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started")
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg4 := sync.WaitGroup{}
+	wg4.Add(2)
 
 	var e1, e2 Event
 	go func() {
 		select {
 		case e1 = <-ch1:
-			wg.Done()
+			wg4.Done()
 		}
 	}()
 
 	go func() {
 		select {
 		case e2 = <-ch2:
-			wg.Done()
+			wg4.Done()
 		}
 	}()
 
 	pub.Emit(eventTest)
 
-	wg.Wait()
+	wg4.Wait()
 
 	t.Log("params in 1st channel: ", e1.Params)
 	t.Log("params in 2nd channel: ", e2.Params)
@@ -197,27 +200,27 @@ func TestPublisher_On_2subscribers_2receiving_2localmiddleware(t *testing.T) {
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*", m1, m2)
 	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", m1, m2, m3)
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg5 := sync.WaitGroup{}
+	wg5.Add(2)
 
 	var e1, e2 Event
 	go func() {
 		select {
 		case e1 = <-ch1:
-			wg.Done()
+			wg5.Done()
 		}
 	}()
 
 	go func() {
 		select {
 		case e2 = <-ch2:
-			wg.Done()
+			wg5.Done()
 		}
 	}()
 
 	pub.Emit(eventTest)
 
-	wg.Wait()
+	wg5.Wait()
 
 	t.Log("params in 1st channel: ", e1.Params)
 	t.Log("params in 2nd channel: ", e2.Params)
@@ -274,27 +277,27 @@ func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddlewar
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*", mL1)
 	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", mL1, mL2)
 
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg6 := sync.WaitGroup{}
+	wg6.Add(2)
 
 	var e1, e2 Event
 	go func() {
 		select {
 		case e1 = <-ch1:
-			wg.Done()
+			wg6.Done()
 		}
 	}()
 
 	go func() {
 		select {
 		case e2 = <-ch2:
-			wg.Done()
+			wg6.Done()
 		}
 	}()
 
 	pub.Emit(eventTest)
 
-	wg.Wait()
+	wg6.Wait()
 
 	t.Log("params in 1st channel: ", e1.Params)
 	t.Log("params in 2nd channel: ", e2.Params)
