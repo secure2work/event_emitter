@@ -122,3 +122,53 @@ func TestPublisher_On_2subscribers_1receiving(t *testing.T) {
 	funcUnsubscribe1()
 	funcUnsubscribe2()
 }
+
+func TestPublisher_On_2subscribers_2receiving_2globalmiddleware(t *testing.T) {
+	pub := NewPubsub()
+
+	m1 := func(event *Event) {
+		event.Params["m1key"] = "m1value"
+	}
+
+	m2 := func(event *Event) {
+		event.Params["m2key"] = "m1value"
+	}
+
+	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*", m1, m2)
+	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", m1, m2)
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	var e1, e2 Event
+	go func() {
+		select {
+		case e1 = <-ch1:
+			wg.Done()
+		}
+	}()
+
+	go func() {
+		select {
+		case e2 = <-ch2:
+			wg.Done()
+		}
+	}()
+
+	eventTest := Event{
+		Name:   "nori/plugins/started",
+		Params: nil,
+	}
+
+	pub.Emit(eventTest)
+
+	wg.Wait()
+
+	t.Log("event in 1st channel: ", e1.Name)
+	t.Log("event in 2nd channel: ", e2.Name)
+
+	assert.Equal(t, e1.Name, e2.Name)
+
+	funcUnsubscribe1()
+	funcUnsubscribe2()
+}
