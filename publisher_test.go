@@ -190,8 +190,12 @@ func TestPublisher_On_2subscribers_2receiving_2localmiddleware(t *testing.T) {
 		event.Params["local_m2key"] = "local_m2value"
 	}
 
+	m3 := func(event *Event) {
+		event.Params["local_m3key"] = "local_m3value"
+	}
+
 	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*", m1, m2)
-	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", m1, m2)
+	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", m1, m2, m3)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)

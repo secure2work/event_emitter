@@ -1,7 +1,6 @@
 package event_emitter
 
 import (
-	"log"
 	"path"
 	"sync"
 )
@@ -82,10 +81,19 @@ func (p *publisher) Emit(event Event) {
 
 		m.middleware(&event)
 	}
-	log.Println("p.middlewares", p.middlewares)
 	for _, value := range p.subs {
 
 		go func(ch chan<- Event, patternCh string, middlewaresSub []Middleware, event2 Event) {
+
+			// Creating empty map
+			CopiedMap := make(map[string]interface{})
+
+			/* Copy Content from Map1 to Map2*/
+			for index, element := range event2.Params {
+				CopiedMap[index] = element
+			}
+			event.Params = nil
+			event.Params = CopiedMap
 
 			ok, err := path.Match(patternCh, event.Name)
 
