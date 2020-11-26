@@ -1,6 +1,7 @@
 package event_emitter
 
 import (
+	"log"
 	"path"
 	"sync"
 )
@@ -65,16 +66,20 @@ func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Eve
 func (p *publisher) Emit(event Event) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
+	for _, m := range p.middlewares {
+		m(&event)
+	}
+	log.Println("p.middlewares", p.middlewares)
 	for _, value := range p.subs {
-		go func(ch chan<- Event, patternCh string, middlewares []Middleware) {
+
+		go func(ch chan<- Event, patternCh string, middlewaresSub []Middleware) {
 
 			ok, err := path.Match(patternCh, event.Name)
 
 			if err != nil || !ok {
 				return
 			}
-			for _, m := range middlewares {
+			for _, m := range middlewaresSub {
 				m(&event)
 			}
 			ch <- event
