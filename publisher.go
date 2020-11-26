@@ -84,9 +84,9 @@ func (p *publisher) Emit(event Event) {
 	for _, value := range p.subs {
 
 		go func(ch chan<- Event, patternCh string, middlewaresSub []Middleware, event2 Event) {
-			/*mutex := sync.Mutex{}
+			mutex := sync.Mutex{}
 			mutex.Lock()
-			defer mutex.Unlock()*/
+			defer mutex.Unlock()
 			// Creating empty map
 			CopiedMap := make(map[string]interface{})
 
@@ -94,21 +94,21 @@ func (p *publisher) Emit(event Event) {
 			for index, element := range event2.Params {
 				CopiedMap[index] = element
 			}
-			event.Params = nil
-			event.Params = CopiedMap
+			event2.Params = nil
+			event2.Params = CopiedMap
 
-			ok, err := path.Match(patternCh, event.Name)
+			ok, err := path.Match(patternCh, event2.Name)
 
 			if err != nil || !ok {
 				return
 			}
 			for _, m := range middlewaresSub {
-				//mutex := sync.Mutex{}
-				//mutex.Lock()
-				m(&event)
-				//mutex.Unlock()
+				mutex := sync.Mutex{}
+				mutex.Lock()
+				m(&event2)
+				mutex.Unlock()
 			}
-			ch <- event
+			ch <- event2
 		}(value.Ch, value.Pattern, value.middlewares, event)
 	}
 }
