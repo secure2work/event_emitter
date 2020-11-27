@@ -103,10 +103,7 @@ func (p *publisher) Emit(event Event) {
 				return
 			}
 			for _, m := range middlewaresSub {
-				mutex := sync.Mutex{}
-				mutex.Lock()
 				m(&event2)
-				mutex.Unlock()
 			}
 			ch <- event2
 		}(value.Ch, value.Pattern, value.middlewares, event)
