@@ -85,17 +85,11 @@ func (p *publisher) Emit(event Event) {
 	}
 	for _, value := range p.subs {
 
-		/*	CopiedMap := make(map[string]interface{})
-
-			for index, element := range event.Params {
-				CopiedMap[index] = element
-			}
-			event.Params = nil
-			event.Params = CopiedMap*/
 		CopiedMap := make(map[string]interface{})
 		CopiedMap, _ = utils.Map(event.Params)
-		event.Params = nil
-		event.Params = CopiedMap
+		event2 := event
+		event2.Params = nil
+		event2.Params = CopiedMap
 
 		go func(ch chan<- Event, patternCh string, middlewaresSub []Middleware, event2 Event) {
 
@@ -108,7 +102,7 @@ func (p *publisher) Emit(event Event) {
 				m(&event2)
 			}
 			ch <- event2
-		}(value.Ch, value.Pattern, value.middlewares, event)
+		}(value.Ch, value.Pattern, value.middlewares, event2)
 	}
 }
 
