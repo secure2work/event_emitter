@@ -3,6 +3,8 @@ package event_emitter
 import (
 	"path"
 	"sync"
+
+	"github.com/bruteforce1414/event_emitter/utils"
 )
 
 type Sub struct {
@@ -83,11 +85,15 @@ func (p *publisher) Emit(event Event) {
 	}
 	for _, value := range p.subs {
 
-		CopiedMap := make(map[string]interface{})
+		/*	CopiedMap := make(map[string]interface{})
 
-		for index, element := range event.Params {
-			CopiedMap[index] = element
-		}
+			for index, element := range event.Params {
+				CopiedMap[index] = element
+			}
+			event.Params = nil
+			event.Params = CopiedMap*/
+		CopiedMap := make(map[string]interface{})
+		CopiedMap, _ = utils.Map(event.Params)
 		event.Params = nil
 		event.Params = CopiedMap
 
