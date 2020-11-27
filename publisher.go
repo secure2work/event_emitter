@@ -59,9 +59,9 @@ func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Eve
 			close(newChannel)
 			delete(p.subs, nameChannel)
 			return nil
-		} else {
-			return nil
 		}
+		return nil
+
 	}
 
 	return newChannel, c
