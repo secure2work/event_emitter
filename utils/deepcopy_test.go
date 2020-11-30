@@ -13,6 +13,9 @@ func Benchmark_Map(b *testing.B) {
 	copy["local_m2key"] = "local_m2value"
 
 	for i := 0; i < b.N; i++ {
-		Map(copy)
+		_, err := Map(copy)
+		if err != nil {
+			b.Errorf("%s", err.Error())
+		}
 	}
 }
