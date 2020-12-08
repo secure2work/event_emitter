@@ -266,30 +266,33 @@ func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddlewar
 	}
 
 	type TestEventStruct struct {
-		Key string
+		Key_Primary   string
+		Key_Secondary string
 	}
 	mG1 := func(event *event.Event) {
 		event.Params = TestEventStruct{
-			Key: "global_m1value",
+			Key_Primary: "key_primary_1",
 		}
 
 	}
 
 	mG2 := func(event *event.Event) {
 		event.Params = TestEventStruct{
-			Key: "global_m2value",
+			Key_Primary: "key_primary_2",
 		}
 	}
 
 	mL1 := func(event *event.Event) {
 		event.Params = TestEventStruct{
-			Key: "local_m1value",
+			Key_Primary:   "key_primary_1",
+			Key_Secondary: "key_secondary_2",
 		}
 	}
 
 	mL2 := func(event *event.Event) {
 		event.Params = TestEventStruct{
-			Key: "local_m2value",
+			Key_Primary:   "key_primary_2",
+			Key_Secondary: "key_secondary_2",
 		}
 	}
 
@@ -329,14 +332,10 @@ func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddlewar
 		Params: make(map[string]interface{}),
 	}
 	eventForComparing1.Params = TestEventStruct{
-		Key: "global_m1value",
+		Key_Primary:   "key_primary_1",
+		Key_Secondary: "key_secondary_2",
 	}
-	eventForComparing1.Params = TestEventStruct{
-		Key: "global_m2value",
-	}
-	eventForComparing1.Params = TestEventStruct{
-		Key: "local_m1value",
-	}
+
 	assert.Equal(t, e1.Params, eventForComparing1.Params)
 
 	eventForComparing2 := event.Event{
@@ -344,16 +343,8 @@ func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddlewar
 		Params: make(map[string]interface{}),
 	}
 	eventForComparing2.Params = TestEventStruct{
-		Key: "global_m1value",
-	}
-	eventForComparing2.Params = TestEventStruct{
-		Key: "global_m2value",
-	}
-	eventForComparing2.Params = TestEventStruct{
-		Key: "local_m1value",
-	}
-	eventForComparing2.Params = TestEventStruct{
-		Key: "local_m2value",
+		Key_Primary:   "key_primary_2",
+		Key_Secondary: "key_secondary_2",
 	}
 
 	assert.Equal(t, e2.Params, eventForComparing2.Params)
