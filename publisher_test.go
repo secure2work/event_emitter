@@ -285,7 +285,7 @@ func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddlewar
 	mL1 := func(event *event.Event) {
 		event.Params = TestEventStruct{
 			Key_Primary:   "key_primary_1",
-			Key_Secondary: "key_secondary_2",
+			Key_Secondary: "key_secondary_1",
 		}
 	}
 
@@ -333,7 +333,7 @@ func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddlewar
 	}
 	eventForComparing1.Params = TestEventStruct{
 		Key_Primary:   "key_primary_1",
-		Key_Secondary: "key_secondary_2",
+		Key_Secondary: "key_secondary_1",
 	}
 
 	assert.Equal(t, e1.Params, eventForComparing1.Params)
