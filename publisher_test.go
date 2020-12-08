@@ -178,88 +178,86 @@ func TestPublisher_On_2subscribers_2receiving_2globalmiddleware(t *testing.T) {
 	funcUnsubscribe2()
 }
 
-//func TestPublisher_On_2subscribers_2receiving_2localmiddleware(t *testing.T) {
-//	pub := NewPubsub()
-//
-//	type TestEventStruct struct {
-//		Key string
-//	}
-//
-//	eventTest := event.Event{
-//		Name:   "nori/plugins/started",
-//		Params: make(map[string]interface{}),
-//	}
-//
-//	m1 := func(event *event.Event) {
-//		event.Params =  TestEventStruct{
-//			Key: "local_m1value",
-//		}
-//	}
-//
-//	m2 := func(event *event.Event) {
-//		event.Params = TestEventStruct{
-//			Key: "local_m2value",
-//		}
-//	}
-//
-//	m3 := func(event *event.Event) {
-//		event.Params = TestEventStruct{
-//			Key: "local_m3value",
-//		}
-//	}
-//
-//	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*", m1, m2)
-//	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", m1, m2, m3)
-//
-//	wg5 := sync.WaitGroup{}
-//	wg5.Add(2)
-//
-//	var e1, e2 event.Event
-//	go func() {
-//		select {
-//		case e1 = <-ch1:
-//			wg5.Done()
-//		}
-//	}()
-//
-//	go func() {
-//		select {
-//		case e2 = <-ch2:
-//			wg5.Done()
-//		}
-//	}()
-//
-//	pub.Emit(eventTest.Name, eventTest.Params)
-//
-//	wg5.Wait()
-//
-//	t.Log("params in 1st channel: ", e1.Params)
-//	t.Log("params in 2nd channel: ", e2.Params)
-//	assert.NotEqual(t, e1.Params, e2.Params)
-//
-//	eventForComparing1 := event.Event{
-//		Name:   "nori/plugins/started",
-//		Params: make(map[string]interface{}),
-//	}
-//	local_m1key := "local_m1value"
-//	local_m2key := "local_m2value"
-//	assert.Equal(t, e1.Params, eventForComparing1.Params)
-//
-//	eventForComparing2 := event.Event{
-//		Name:   "nori/plugins/started",
-//		Params: make(map[string]interface{}),
-//	}
-//
-//	switch e2Params := e2.Params.(type) {
-//	case TestEventStruct:
-//		assert.Equal(t, e2Params.Key, eventForComparing2.Params)
-//	}
-//
-//	assert.Equal(t, e2.Params, eventForComparing2.Params)
-//
-//	funcUnsubscribe1()
-//	funcUnsubscribe2()
-//}
+func TestPublisher_On_2subscribers_2receiving_2localmiddleware(t *testing.T) {
+	pub := NewPubsub()
+
+	type TestEventStruct struct {
+		Key string
+	}
+
+	eventTest := event.Event{
+		Name: "nori/plugins/started",
+		//Params: make(map[string]interface{}),
+	}
+
+	m1 := func(event *event.Event) {
+		event.Params = TestEventStruct{
+			Key: "local_m1value",
+		}
+	}
+
+	m2 := func(event *event.Event) {
+		event.Params = TestEventStruct{
+			Key: "local_m2value",
+		}
+	}
+
+	m3 := func(event *event.Event) {
+		event.Params = TestEventStruct{
+			Key: "local_m3value",
+		}
+	}
+
+	ch1, funcUnsubscribe1 := pub.On("nori/plugins/*", m1, m2)
+	ch2, funcUnsubscribe2 := pub.On("nori/plugins/started", m1, m2, m3)
+
+	wg5 := sync.WaitGroup{}
+	wg5.Add(2)
+
+	var e1, e2 event.Event
+	go func() {
+		select {
+		case e1 = <-ch1:
+			wg5.Done()
+		}
+	}()
+
+	go func() {
+		select {
+		case e2 = <-ch2:
+			wg5.Done()
+		}
+	}()
+
+	pub.Emit(eventTest.Name, eventTest.Params)
+
+	wg5.Wait()
+
+	t.Log("params in 1st channel: ", e1.Params)
+	t.Log("params in 2nd channel: ", e2.Params)
+	assert.NotEqual(t, e1.Params, e2.Params)
+
+	eventForComparing1 := event.Event{
+		Name: "nori/plugins/started",
+		Params: TestEventStruct{
+			Key: "local_m2value",
+		},
+	}
+
+	assert.Equal(t, e1.Params, eventForComparing1.Params)
+
+	eventForComparing2 := event.Event{
+		Name: "nori/plugins/started",
+		Params: TestEventStruct{
+			Key: "local_m3value",
+		},
+	}
+
+	assert.Equal(t, e2.Params, eventForComparing2.Params)
+
+	funcUnsubscribe1()
+	funcUnsubscribe2()
+}
 
 //func TestPublisher_On_2subscribers_2receiving_2_globalmiddleware_2localmiddleware(t *testing.T) {
 //	pub := NewPubsub()
