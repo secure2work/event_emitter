@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bruteforce1414/event_emitter"
+	"github.com/secure2work/event_emitter"
 )
 
 const (
