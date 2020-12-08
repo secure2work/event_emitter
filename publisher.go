@@ -4,12 +4,12 @@ import (
 	"path"
 	"sync"
 
-	"github.com/bruteforce1414/event_emitter/utils"
+	"github.com/nori-io/common/v3/pkg/domain/event"
 )
 
 type Sub struct {
 	Pattern     string
-	Ch          chan<- Event
+	Ch          chan<- event.Event
 	middlewares []Middleware
 }
 
@@ -25,7 +25,7 @@ type publisher struct {
 	middlewares []mw
 }
 
-type Middleware func(event *Event)
+type Middleware func(event *event.Event)
 
 func (p *publisher) Use(pattern string, middleware ...Middleware) {
 	p.mu.Lock()
@@ -35,8 +35,8 @@ func (p *publisher) Use(pattern string, middleware ...Middleware) {
 	}
 }
 
-func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Event, unsubscribe func() error) {
-	newChannel := make(chan Event)
+func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan event.Event, unsubscribe func() error) {
+	newChannel := make(chan event.Event)
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -69,40 +69,38 @@ func (p *publisher) On(pattern string, middleware ...Middleware) (evt <-chan Eve
 	return newChannel, c
 }
 
-func (p *publisher) Emit(event Event) {
+func (p *publisher) Emit(name string, params interface{}) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	evt := event.Event{
+		Name:   name,
+		Params: params,
+	}
+
 	for _, m := range p.middlewares {
 
-		ok, err := path.Match(m.pattern, event.Name)
+		ok, err := path.Match(m.pattern, name)
 
 		if err != nil || !ok {
 			continue
 		}
 
-		m.middleware(&event)
+		m.middleware(&evt)
 	}
 	for _, value := range p.subs {
+		go func(ch chan<- event.Event, patternCh string, middlewares []Middleware, evt event.Event) {
 
-		CopiedMap := make(map[string]interface{})
-		CopiedMap, _ = utils.Map(event.Params)
-		event2 := event
-		event2.Params = nil
-		event2.Params = CopiedMap
-
-		go func(ch chan<- Event, patternCh string, middlewaresSub []Middleware, event2 Event) {
-
-			ok, err := path.Match(patternCh, event2.Name)
+			ok, err := path.Match(patternCh, evt.Name)
 
 			if err != nil || !ok {
 				return
 			}
-			for _, m := range middlewaresSub {
-				m(&event2)
+			for _, m := range middlewares {
+				m(&evt)
 			}
-			ch <- event2
-		}(value.Ch, value.Pattern, value.middlewares, event2)
+			ch <- evt
+		}(value.Ch, value.Pattern, value.middlewares, evt)
 	}
 }
 
